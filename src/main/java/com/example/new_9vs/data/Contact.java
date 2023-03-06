@@ -3,7 +3,6 @@ package com.example.new_9vs.data;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 import org.springframework.validation.annotation.Validated;
 
 @Entity
@@ -15,11 +14,13 @@ import org.springframework.validation.annotation.Validated;
 @Builder
 @Table(name = "contacts")
 public class Contact {
-
+//    @Getter(AccessLevel.NONE)
+//    @Setter(AccessLevel.NONE)
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "contact_id", nullable = false)
+    @Column(name = "id", nullable = false)
     private Long id;
+
     @NonNull
     private String username;
     @NonNull
