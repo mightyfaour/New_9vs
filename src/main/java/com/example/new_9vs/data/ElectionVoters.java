@@ -13,7 +13,7 @@ import org.springframework.validation.annotation.Validated;
 @AllArgsConstructor
 @Builder
 @Table(name = "contacts")
-public class Contact {
+public class ElectionVoters {
 //    @Getter(AccessLevel.NONE)
 //    @Setter(AccessLevel.NONE)
     @Id

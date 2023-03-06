@@ -7,11 +7,13 @@ import com.cloudinary.utils.ObjectUtils;
 //import com.example.diary.dto.response.DeleteContactResponse;
 //import com.example.diary.dto.response.UpdateContactResponse;
 //import com.example.diary.exception.ContactException;
-//import com.example.diary.model.data.Contact;
+//import com.example.diary.model.data.ElectionVoters;
 //import com.example.diary.repositories.ContactRepository;
-import com.example.new_9vs.data.Contact;
+import com.example.new_9vs.data.ElectionVoters;
+import com.example.new_9vs.dto.request.AddVoteRequest;
 import com.example.new_9vs.dto.request.CreateContactRequest;
 import com.example.new_9vs.dto.request.UpdateContactRequest;
+import com.example.new_9vs.dto.response.AddVoteResponse;
 import com.example.new_9vs.dto.response.CreateContactResponse;
 import com.example.new_9vs.dto.response.DeleteContactResponse;
 import com.example.new_9vs.dto.response.UpdateContactResponse;
@@ -36,29 +38,43 @@ public class ContactServiceImpl implements ContactService{
     private ContactRepository contactRepository;
     private final CloudService cloudService;
 
+
+    @Override
+    public AddVoteResponse addVote(AddVoteRequest addVoteRequest) throws ContactException, IOException {
+        Optional<ElectionVoters> optionalElectionVoters = contactRepository.findContactById(addVoteRequest.getId());
+        if (optionalElectionVoters. && userVoteCount ==0){
+            voting = ElectionVoters.vote();
+        }
+        return CreateContactResponse.builder()
+                .successful(true)
+                .id(saveElectionVoters.getId())
+                .build();
+    }
     @Override
     public CreateContactResponse createContact(CreateContactRequest createContactRequest) throws ContactException, IOException {
-        Optional<Contact> optionalContact = contactRepository.findContactByUsername(createContactRequest.getUsername());
+        Optional<ElectionVoters> optionalContact = contactRepository.findContactByUsername(createContactRequest.getUsername());
         if (optionalContact.isPresent()){
-            throw new ContactException("Contact with Username "+createContactRequest.getUsername()+" already exist", 400);
+            throw new ContactException("ElectionVoters with Username "+createContactRequest.getUsername()+" already exist", 400);
         }
-        Contact contact = buildContact(createContactRequest);
+        ElectionVoters electionVoters = buildContact(createContactRequest);
         if(createContactRequest.getImage() != null){
             Map<?,?> uploadResult = cloudService.upload(createContactRequest.getImage().getBytes(),
                     ObjectUtils.asMap("public_id", "profile_image/" + createContactRequest.getImage().getOriginalFilename(),
                             "overwrite", true
                     ));
-            contact.setProfilePicture_url(uploadResult.get("url").toString());
+            electionVoters.setProfilePicture_url(uploadResult.get("url").toString());
         }
-        Contact saveContact = contactRepository.save(contact);
+        ElectionVoters saveElectionVoters = contactRepository.save(electionVoters);
         return CreateContactResponse.builder()
                 .successful(true)
-                .id(saveContact.getUsername())
+                .id(saveElectionVoters.getUsername())
                 .build();
     }
 
-    private Contact buildContact(CreateContactRequest createContactRequest) {
-        return Contact.builder()
+
+
+    private ElectionVoters buildContact(CreateContactRequest createContactRequest) {
+        return ElectionVoters.builder()
                 .username(createContactRequest.getUsername())
                 .first_name(createContactRequest.getFirst_name())
                 .middle_name(createContactRequest.getMiddle_name())
@@ -70,31 +86,31 @@ public class ContactServiceImpl implements ContactService{
                 .build();
     }
 
-//    public List<Contact> getAllContact(){
+//    public List<ElectionVoters> getAllContact(){
 //        return contactRepository.findAll();
 //    }
 
     @Override
-    public Contact findContactByUsername(String username) throws ContactException {
-        Optional<Contact> foundContact = contactRepository.findContactByUsername(String.valueOf(username));
+    public ElectionVoters findContactByUsername(String username) throws ContactException {
+        Optional<ElectionVoters> foundContact = contactRepository.findContactByUsername(String.valueOf(username));
         if (foundContact.isEmpty()) {
-            throw new ContactException("Contact with Username " + username + " does not exist", 404);
+            throw new ContactException("ElectionVoters with Username " + username + " does not exist", 404);
         }
         return foundContact.get();
     }
 
     @Override
-    public List<Contact> getAllUsername() throws ContactException {
+    public List<ElectionVoters> getAllUsername() throws ContactException {
         return null;
     }
 
     @Override
     public DeleteContactResponse deleteContactByUsername(String username) throws ContactException {
-        Optional<Contact> foundContact = contactRepository.findContactByUsername(String.valueOf(username));
+        Optional<ElectionVoters> foundContact = contactRepository.findContactByUsername(String.valueOf(username));
 
         if (foundContact.isEmpty()) {
             log.info("found contact is after repo search ====> null o");
-            throw new ContactException("Contact with Username " + username + " does not exist", 404);
+            throw new ContactException("ElectionVoters with Username " + username + " does not exist", 404);
         }
 //        contactRepository.deleteContactByUsername(String.valueOf(username));
         log.info("found contact is ====> "+foundContact.get());
@@ -103,29 +119,29 @@ public class ContactServiceImpl implements ContactService{
     }
 
     @Override
-    public List<Contact> getAllContact(){
+    public List<ElectionVoters> getAllContact(){
         return contactRepository.findAll();
     }
 
     @Override
     public UpdateContactResponse updateContactDetails(UpdateContactRequest updateContactRequest) throws ContactException, InvocationTargetException, IllegalAccessException {
-        Optional<Contact> foundContact = contactRepository.findContactByUsername(String.valueOf(updateContactRequest.getUsername()));
+        Optional<ElectionVoters> foundContact = contactRepository.findContactByUsername(String.valueOf(updateContactRequest.getUsername()));
         if (foundContact.isEmpty()){
-            throw new ContactException("Contact with Username: "+updateContactRequest.getUsername()+" does not exist", 404);
+            throw new ContactException("ElectionVoters with Username: "+updateContactRequest.getUsername()+" does not exist", 404);
         }
-        Contact contact = foundContact.get();
-        contact.setUsername(updateContactRequest.getUsername());
-        contact.setFirst_name(updateContactRequest.getFirst_name());
-        contact.setMiddle_name(updateContactRequest.getMiddle_name());
-        contact.setLast_name(updateContactRequest.getLast_name());
-        contact.setEmail(updateContactRequest.getEmail());
-        contact.setPassword(updateContactRequest.getPassword());
-        contact.setGender(updateContactRequest.getGender());
-        contact.setPhone_number(updateContactRequest.getPhone_number());
-        contact.setGender(updateContactRequest.getGender());
-        contactRepository.save(contact);
+        ElectionVoters electionVoters = foundContact.get();
+        electionVoters.setUsername(updateContactRequest.getUsername());
+        electionVoters.setFirst_name(updateContactRequest.getFirst_name());
+        electionVoters.setMiddle_name(updateContactRequest.getMiddle_name());
+        electionVoters.setLast_name(updateContactRequest.getLast_name());
+        electionVoters.setEmail(updateContactRequest.getEmail());
+        electionVoters.setPassword(updateContactRequest.getPassword());
+        electionVoters.setGender(updateContactRequest.getGender());
+        electionVoters.setPhone_number(updateContactRequest.getPhone_number());
+        electionVoters.setGender(updateContactRequest.getGender());
+        contactRepository.save(electionVoters);
         UpdateContactResponse updateContactResponse = new UpdateContactResponse();
-        BeanUtils.copyProperties(updateContactResponse, contact);
+        BeanUtils.copyProperties(updateContactResponse, electionVoters);
         return updateContactResponse;
     }
 

@@ -5,8 +5,10 @@ package com.example.new_9vs.controller;
 //import com.example.diary.dto.response.CreateContactResponse;
 //import com.example.diary.exception.ContactException;
 //import com.example.diary.services.ContactService;
+import com.example.new_9vs.dto.request.AddVoteRequest;
 import com.example.new_9vs.dto.request.CreateContactRequest;
 import com.example.new_9vs.dto.request.UpdateContactRequest;
+import com.example.new_9vs.dto.response.AddVoteResponse;
 import com.example.new_9vs.dto.response.CreateContactResponse;
 import com.example.new_9vs.exception.ContactException;
 import com.example.new_9vs.services.ContactService;
@@ -48,6 +50,17 @@ public class ContactController {
     @PatchMapping("/updateContactDetails")
     public ResponseEntity<?> updateContactByUsername(@RequestBody UpdateContactRequest updateContactRequest) throws ContactException, InvocationTargetException, IllegalAccessException {
         return new ResponseEntity<>(contactService.updateContactDetails(updateContactRequest), HttpStatus.OK);
+    }
+//    @PostMapping("/createContact")
+//    public ResponseEntity<?> createContact(@RequestBody CreateContactRequest createContactRequest) throws ContactException, IOException {
+//        CreateContactResponse createContactResponse = contactService.createContact(createContactRequest);
+//        return new ResponseEntity<>(createContactResponse, HttpStatus.CREATED);
+//    }
+
+    public ResponseEntity<?> addVote(@RequestBody AddVoteRequest addVoteRequest) throws ContactException, IOException {
+        AddVoteResponse addVoteResponse = contactService.addVote();
+        return new ResponseEntity<>(addVoteResponse, HttpStatus.CREATED);
+
     }
 
 
