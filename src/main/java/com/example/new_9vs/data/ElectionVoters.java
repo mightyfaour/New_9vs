@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "contacts")
+@Table(name = "Election_Voters")
 public class ElectionVoters {
 //    @Getter(AccessLevel.NONE)
 //    @Setter(AccessLevel.NONE)
@@ -40,6 +40,18 @@ public class ElectionVoters {
     @NonNull
     private String password;
 
+    private String date_of_birth;
 
+    private String BVN;
+
+    private String address;
+
+    private String phoneNumber;
+
+    private String profileImageUrl;
+
+    private String nationality;
+
+    private boolean hasVoted;
 
 }

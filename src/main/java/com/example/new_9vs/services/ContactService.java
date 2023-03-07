@@ -10,6 +10,7 @@ package com.example.new_9vs.services;
 //import com.example.new_9vs.dto.response.CreateContactResponse;
 //
 import com.example.new_9vs.data.ElectionVoters;
+import com.example.new_9vs.dto.request.AddVoteRequest;
 import com.example.new_9vs.dto.request.CreateContactRequest;
 import com.example.new_9vs.dto.request.UpdateContactRequest;
 import com.example.new_9vs.dto.response.AddVoteResponse;
@@ -25,7 +26,7 @@ import java.util.List;
 public interface ContactService {
     CreateContactResponse createContact(CreateContactRequest createContactRequest) throws ContactException, IOException;
 
-    AddVoteResponse addVote();
+    AddVoteResponse addVote(AddVoteRequest addVoteRequest);
 
     ElectionVoters findContactByUsername(String username) throws ContactException;
 

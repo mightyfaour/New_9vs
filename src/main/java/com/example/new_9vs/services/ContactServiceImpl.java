@@ -10,6 +10,7 @@ import com.cloudinary.utils.ObjectUtils;
 //import com.example.diary.model.data.ElectionVoters;
 //import com.example.diary.repositories.ContactRepository;
 import com.example.new_9vs.data.ElectionVoters;
+import com.example.new_9vs.data.ElectoralCandidate;
 import com.example.new_9vs.dto.request.AddVoteRequest;
 import com.example.new_9vs.dto.request.CreateContactRequest;
 import com.example.new_9vs.dto.request.UpdateContactRequest;
@@ -18,6 +19,7 @@ import com.example.new_9vs.dto.response.CreateContactResponse;
 import com.example.new_9vs.dto.response.DeleteContactResponse;
 import com.example.new_9vs.dto.response.UpdateContactResponse;
 import com.example.new_9vs.exception.ContactException;
+import com.example.new_9vs.exception.VoterException;
 import com.example.new_9vs.repositories.ContactRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,17 +42,6 @@ public class ContactServiceImpl implements ContactService{
     private final CloudService cloudService;
 
 
-    @Override
-    public AddVoteResponse addVote(AddVoteRequest addVoteRequest) throws ContactException, IOException {
-        Optional<ElectionVoters> optionalElectionVoters = contactRepository.findContactById(addVoteRequest.getId());
-        if (optionalElectionVoters. && userVoteCount ==0){
-            voting = ElectionVoters.vote();
-        }
-        return CreateContactResponse.builder()
-                .successful(true)
-                .id(saveElectionVoters.getId())
-                .build();
-    }
     @Override
     public CreateContactResponse createContact(CreateContactRequest createContactRequest) throws ContactException, IOException {
         Optional<ElectionVoters> optionalContact = contactRepository.findContactByUsername(createContactRequest.getUsername());
@@ -71,7 +63,48 @@ public class ContactServiceImpl implements ContactService{
                 .build();
     }
 
+    @Override
+    public AddVoteResponse addVote(AddVoteRequest addVoteRequest) {
+        ElectionVoters electionVoters = validateVoterCredentials(addVoteRequest);
+        if (electionVoters.isHasVoted()){
+            throw new VoterException("You have already cast your vote for your preferred candidate", 400);
+        }
+        ElectoralCandidate electoralCandidate = checkElectoralCandidateValidity(addVoteRequest);
+        electoralCandidate.setVoteCount(electoralCandidate.getVoteCount() + 1);
+        electionVoters.setHasVoted(true);
+        electionVotersRepository.save(ElectoralCandidate);
+        return new AddVoteResponse("You have successfully casted your vote for your preferred candidate");
+    }
 
+    private ElectoralCandidate checkElectoralCandidateValidity(AddVoteRequest addVoteRequest) {
+        if (!electoralCandidate(addVoteRequest)){
+            throw new VoterException("Incorrect candidate name", 400);
+        }
+    }
+
+    private static boolean electoralCandidate(AddVoteRequest castVoteRequest) {
+        return EnumSet.allOf(Party.class)
+                .stream()
+                .anyMatch(party -> party.getName().equals(castVoteRequest.getParty().toUpperCase()));
+    }
+//    private Candidate checkCandidateValidity(CastVoteRequest castVoteRequest) {
+//        if(!partyIsValid(castVoteRequest)) {
+//            throw new SimpoProjectException("Incorrect party name", 400);
+//        }
+//        Candidate candidate = candidateRepository.findCandidateByVoteCategoryAndParty(VoteCategory.valueOf(castVoteRequest.getVoteCategory()),Party.valueOf(castVoteRequest.getParty()));
+//        if(candidate == null){
+//            throw new SimpoProjectException("No candidate found!", 400);
+//        }
+//        return candidate;
+//    }
+
+    private ElectionVoters validateVoterCredentials(AddVoteRequest addVoteRequest) {
+        ElectionVoters electionVoters = electionVoterRepository.findElectionVoterById(addVoteRequest.getId());
+        if (electionVoters == null || !electionVoters.getPassword().equals(addVoteRequest.getPassword())){
+            throw new VoterException("Incorrect PASSWORD", 400);
+        }
+        return electionVoters;
+    }
 
     private ElectionVoters buildContact(CreateContactRequest createContactRequest) {
         return ElectionVoters.builder()

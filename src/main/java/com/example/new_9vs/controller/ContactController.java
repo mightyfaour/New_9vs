@@ -11,6 +11,7 @@ import com.example.new_9vs.dto.request.UpdateContactRequest;
 import com.example.new_9vs.dto.response.AddVoteResponse;
 import com.example.new_9vs.dto.response.CreateContactResponse;
 import com.example.new_9vs.exception.ContactException;
+import com.example.new_9vs.exception.VoterException;
 import com.example.new_9vs.services.ContactService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -56,10 +57,16 @@ public class ContactController {
 //        CreateContactResponse createContactResponse = contactService.createContact(createContactRequest);
 //        return new ResponseEntity<>(createContactResponse, HttpStatus.CREATED);
 //    }
+//@PostMapping("presidency/vote")
+//public ResponseEntity<?>  castVoteForPresidency(@RequestBody CastVoteRequest castVoteRequest)  {
+//    CastVoteResponse castVoteResponse = appUserService.castVoteForPresidency(castVoteRequest);
+//    return ResponseEntity.status(HttpStatus.OK).body(castVoteResponse);
+//}
 
-    public ResponseEntity<?> addVote(@RequestBody AddVoteRequest addVoteRequest) throws ContactException, IOException {
-        AddVoteResponse addVoteResponse = contactService.addVote();
-        return new ResponseEntity<>(addVoteResponse, HttpStatus.CREATED);
+    @PostMapping("/vote")
+    public ResponseEntity<?> addVote(@RequestBody AddVoteRequest addVoteRequest) throws VoterException, IOException {
+        AddVoteResponse addVoteResponse = contactService.addVote(addVoteRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(addVoteResponse);
 
     }
 
