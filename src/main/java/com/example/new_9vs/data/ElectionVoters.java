@@ -3,9 +3,10 @@ package com.example.new_9vs.data;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.validation.annotation.Validated;
 
-@Entity
+@Document
 @Getter
 @Setter
 @Validated
@@ -53,5 +54,6 @@ public class ElectionVoters {
     private String nationality;
 
     private boolean hasVoted;
+
 
 }

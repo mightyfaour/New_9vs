@@ -11,9 +11,11 @@ import com.cloudinary.utils.ObjectUtils;
 //import com.example.diary.repositories.ContactRepository;
 import com.example.new_9vs.data.ElectionVoters;
 import com.example.new_9vs.data.ElectoralCandidate;
+import com.example.new_9vs.data.VoteCategory;
 import com.example.new_9vs.dto.request.AddVoteRequest;
 import com.example.new_9vs.dto.request.CreateContactRequest;
 import com.example.new_9vs.dto.request.UpdateContactRequest;
+import com.example.new_9vs.dto.request.ViewResultResponse;
 import com.example.new_9vs.dto.response.AddVoteResponse;
 import com.example.new_9vs.dto.response.CreateContactResponse;
 import com.example.new_9vs.dto.response.DeleteContactResponse;
@@ -21,6 +23,8 @@ import com.example.new_9vs.dto.response.UpdateContactResponse;
 import com.example.new_9vs.exception.ContactException;
 import com.example.new_9vs.exception.VoterException;
 import com.example.new_9vs.repositories.ContactRepository;
+import com.example.new_9vs.repositories.ElectionVotersRepository;
+import com.example.new_9vs.repositories.ElectoralCandidateRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
@@ -28,10 +32,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -40,6 +41,10 @@ public class ContactServiceImpl implements ContactService{
 
     private ContactRepository contactRepository;
     private final CloudService cloudService;
+
+    private ElectionVotersRepository electionVotersRepository;
+    private ElectoralCandidateRepository electoralCandidateRepository;
+
 
 
     @Override
@@ -61,49 +66,6 @@ public class ContactServiceImpl implements ContactService{
                 .successful(true)
                 .id(saveElectionVoters.getUsername())
                 .build();
-    }
-
-    @Override
-    public AddVoteResponse addVote(AddVoteRequest addVoteRequest) {
-        ElectionVoters electionVoters = validateVoterCredentials(addVoteRequest);
-        if (electionVoters.isHasVoted()){
-            throw new VoterException("You have already cast your vote for your preferred candidate", 400);
-        }
-        ElectoralCandidate electoralCandidate = checkElectoralCandidateValidity(addVoteRequest);
-        electoralCandidate.setVoteCount(electoralCandidate.getVoteCount() + 1);
-        electionVoters.setHasVoted(true);
-        electionVotersRepository.save(ElectoralCandidate);
-        return new AddVoteResponse("You have successfully casted your vote for your preferred candidate");
-    }
-
-    private ElectoralCandidate checkElectoralCandidateValidity(AddVoteRequest addVoteRequest) {
-        if (!electoralCandidate(addVoteRequest)){
-            throw new VoterException("Incorrect candidate name", 400);
-        }
-    }
-
-    private static boolean electoralCandidate(AddVoteRequest castVoteRequest) {
-        return EnumSet.allOf(Party.class)
-                .stream()
-                .anyMatch(party -> party.getName().equals(castVoteRequest.getParty().toUpperCase()));
-    }
-//    private Candidate checkCandidateValidity(CastVoteRequest castVoteRequest) {
-//        if(!partyIsValid(castVoteRequest)) {
-//            throw new SimpoProjectException("Incorrect party name", 400);
-//        }
-//        Candidate candidate = candidateRepository.findCandidateByVoteCategoryAndParty(VoteCategory.valueOf(castVoteRequest.getVoteCategory()),Party.valueOf(castVoteRequest.getParty()));
-//        if(candidate == null){
-//            throw new SimpoProjectException("No candidate found!", 400);
-//        }
-//        return candidate;
-//    }
-
-    private ElectionVoters validateVoterCredentials(AddVoteRequest addVoteRequest) {
-        ElectionVoters electionVoters = electionVoterRepository.findElectionVoterById(addVoteRequest.getId());
-        if (electionVoters == null || !electionVoters.getPassword().equals(addVoteRequest.getPassword())){
-            throw new VoterException("Incorrect PASSWORD", 400);
-        }
-        return electionVoters;
     }
 
     private ElectionVoters buildContact(CreateContactRequest createContactRequest) {
@@ -150,7 +112,63 @@ public class ContactServiceImpl implements ContactService{
         contactRepository.delete(foundContact.get());
         return new DeleteContactResponse(true);
     }
+//    ......................................................................................................
+    @Override
+    public AddVoteResponse addVote(AddVoteRequest addVoteRequest) {
+        ElectionVoters electionVoters = validateElectionVotersCredentials(addVoteRequest);
+        if(electionVoters.isHasVoted()){
+            throw new VoterException("You have already cast your vote for your preferred candidate", 400);
+        }
+        if(!VoteCategory.valueOf(addVoteRequest.getVoteCategory().toUpperCase()).equals(VoteCategory.PRESIDENCY)){
+            throw new VoterException("Invalid vote category", 400);
+        }
+        ElectoralCandidate electoralCandidate = checkCandidateValidity(addVoteRequest);
+        ElectoralCandidate.setVoteCount(ElectoralCandidate.getVoteCount()+ 1);
+        electionVoters.setHasVoted(true);
+        electionVotersRepository.save(electionVoters);
+        electoralCandidateRepository.save(electoralCandidate);
+        return new AddVoteResponse("You have successfully casted your vote for your preferred presidential candidate");
+    }
+    private ElectoralCandidate checkCandidateValidity(AddVoteRequest addVoteRequest) {
+        if(!fullNameIsValid(addVoteRequest)) {
+            throw new ("Incorrect party name", 400);
+        }
+        ElectoralCandidate electoralCandidate = ElectoralCandidateRepository.findCandidateByVoteCategory(VoteCategory.valueOf(addVoteRequest.getVoteCategory()));
+        if(electoralCandidate == null){
+            throw new VoterException("No candidate found!", 400);
+        }
+        return electoralCandidate;
+    }
 
+private ElectionVoters validateElectionVotersCredentials(AddVoteRequest addVoteRequest) {
+    ElectionVoters electionVoters = electionVotersRepository.findUserByBVN(addtVoteRequest.getBVN());
+    if(electionVoters == null || !electionVoters.getPassword().equals(addVoteRequest.getPassword())){
+        throw new VoterException("Incorrect BVN or Password", 400);
+    }
+    return electionVoters;
+
+
+    @Override
+    public ViewResultResponse viewPresidentialResultInPercentage() {
+        List<ElectoralCandidate> presidentialCandidates = electoralCandidateRepository.findCandidateByVoteCategory(VoteCategory.PRESIDENCY);
+        return getResultFor(presidentialCandidates);
+    }
+}
+
+//    private ElectionVoters getResultFor(List<ElectoralCandidate> presidentialCandidates) {
+//    }
+
+    private ElectionVoters getResultFor(List<ElectoralCandidate> electoralCandidates) {
+        long total = electoralCandidates.stream().mapToLong(ElectoralCandidate::getVoteCount).count();
+        Map<String, String> result = new HashMap<>();
+        for(ElectoralCandidate electoralCandidate : electoralCandidates){
+            result.put(electoralCandidate.getFullName().toString(), String.valueOf(electoralCandidate.getVoteCount()/total *100));
+        }
+        return new ViewResultResponse(result);
+    }
+
+
+    //    ..................................................................................................................
     @Override
     public List<ElectionVoters> getAllContact(){
         return contactRepository.findAll();

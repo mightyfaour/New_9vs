@@ -13,6 +13,7 @@ import com.example.new_9vs.dto.response.CreateContactResponse;
 import com.example.new_9vs.exception.ContactException;
 import com.example.new_9vs.exception.VoterException;
 import com.example.new_9vs.services.ContactService;
+import com.example.new_9vs.services.ElectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,8 @@ public class ContactController {
 
     @Autowired
     private ContactService contactService;
+    @Autowired
+    private ElectionService electionService;
 
     @PostMapping("/createContact")
     public ResponseEntity<?> createContact(@RequestBody CreateContactRequest createContactRequest) throws ContactException, IOException {
@@ -52,23 +55,4 @@ public class ContactController {
     public ResponseEntity<?> updateContactByUsername(@RequestBody UpdateContactRequest updateContactRequest) throws ContactException, InvocationTargetException, IllegalAccessException {
         return new ResponseEntity<>(contactService.updateContactDetails(updateContactRequest), HttpStatus.OK);
     }
-//    @PostMapping("/createContact")
-//    public ResponseEntity<?> createContact(@RequestBody CreateContactRequest createContactRequest) throws ContactException, IOException {
-//        CreateContactResponse createContactResponse = contactService.createContact(createContactRequest);
-//        return new ResponseEntity<>(createContactResponse, HttpStatus.CREATED);
-//    }
-//@PostMapping("presidency/vote")
-//public ResponseEntity<?>  castVoteForPresidency(@RequestBody CastVoteRequest castVoteRequest)  {
-//    CastVoteResponse castVoteResponse = appUserService.castVoteForPresidency(castVoteRequest);
-//    return ResponseEntity.status(HttpStatus.OK).body(castVoteResponse);
-//}
-
-    @PostMapping("/vote")
-    public ResponseEntity<?> addVote(@RequestBody AddVoteRequest addVoteRequest) throws VoterException, IOException {
-        AddVoteResponse addVoteResponse = contactService.addVote(addVoteRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(addVoteResponse);
-
-    }
-
-
 }

@@ -26,8 +26,6 @@ import java.util.List;
 public interface ContactService {
     CreateContactResponse createContact(CreateContactRequest createContactRequest) throws ContactException, IOException;
 
-    AddVoteResponse addVote(AddVoteRequest addVoteRequest);
-
     ElectionVoters findContactByUsername(String username) throws ContactException;
 
     List<ElectionVoters> getAllUsername() throws ContactException;
@@ -38,5 +36,7 @@ public interface ContactService {
 
     DeleteContactResponse deleteContactByUsername(String username) throws ContactException ;
 
+
+    AddVoteResponse addVote(AddVoteRequest addVoteRequest);
 
 }
